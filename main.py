@@ -31,6 +31,8 @@ def main():
     sound_mixer = SoundMixer()
     game_state = GameState(0)
 
+    sound_mixer.play_sound("simple_noteseq.ogg",-1)
+
     #main loop var
     game_state.running = True
     
@@ -70,8 +72,9 @@ def perform_game_logic(game_state):
     #player movement
     global current_time
     ticks = pygame.time.get_ticks()
-    # if ticks - current_time < 100:
-    #     return
+    
+    if ticks - current_time < 72:
+         return
 
     current_time = pygame.time.get_ticks()
     keys_pressed = pygame.key.get_pressed()
@@ -81,29 +84,30 @@ def perform_game_logic(game_state):
         game_state.actors["P1"].move(Direction.LEFT)
     elif keys_pressed[pygame.K_DOWN]:
         game_state.actors["P1"].move(Direction.DOWN)
-    elif keys_pressed[pygame.K_UP]:
+    
+    if keys_pressed[pygame.K_UP]:
         game_state.actors["P1"].move(Direction.UP)
-        game_state.actors["P1"].jump(clock.tick())
+        # game_state.actors["P1"].jump(clock.tick())
     elif game_state.actors["P1"].is_falling:
-        game_state.actors["P1"].move_gravity()
+        game_state.actors["P1"].move_gravity(clock.tick())
     else:
         game_state.actors["P1"].is_moving = False
     
     
-    #randomly add npc
-    if len(game_state.actors) < 5:
-        roll = random.randint(1,1000)
-        if roll % 100 == 0:
-            game_state.create_npc()
+    # #randomly add npc
+    # if len(game_state.actors) < 5:
+    #     roll = random.randint(1,1000)
+    #     if roll % 100 == 0:
+    #         game_state.create_npc()
 
-    # randomly move npc
-    for char_id in game_state.actors:
-        if char_id == 'P1': 
-            continue
+    # # randomly move npc
+    # for char_id in game_state.actors:
+    #     if char_id == 'P1': 
+    #         continue
         
-        random_direction = random.randint(1,4)
-        # print("rand_dir:{}".format(random_direction))
-        game_state.actors[char_id].move(random_direction)
+    #     random_direction = random.randint(1,4)
+    #     # print("rand_dir:{}".format(random_direction))
+    #     game_state.actors[char_id].move(random_direction)
     
     return 0
 

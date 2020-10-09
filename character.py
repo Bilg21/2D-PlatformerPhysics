@@ -1,10 +1,11 @@
 import pygame
 import os
 import math
+import time
 
 from enum import Enum
 from global_settings import DIR_SPRITES
-from physics import addVectors
+import physics
 
 class Direction(Enum):
     RIGHT = 1
@@ -53,7 +54,7 @@ class Character():
     def move(self, direction):
         self.is_moving = True
         direction = Direction(direction)
-        self.speed = 5
+        self.speed = 10
         if direction == Direction.RIGHT:
             self.facingDirection = Direction.RIGHT
             if self.position.x < 1024:
@@ -68,37 +69,46 @@ class Character():
                 self.position.y += self.speed
         elif direction == Direction.UP:
             self.facingDirection = Direction.UP
+            self.jump()
             # if self.position.y > 0:
             #     self.position.y -= self.speed
         
-        # print("{} face_dir:{} pos:{},{}".format(\
-        #     self.name, self.facingDirection, self.position.x, self.position.y))  
+        print("{} face_dir:{} pos:{},{}".format(\
+            self.name, self.facingDirection, self.position.x, self.position.y))  
     
-    def jump(self, ticks):
+    def jump(self):
+        if self.is_falling:
+            return
         self.is_falling = True
-        dt = ticks
 
-        self.angle = math.pi / 2
-        self.dt_speed = 100
-        gravity = (math.pi, 0.002)
-        result = addVectors(self.angle, self.dt_speed, gravity[0], gravity[1])
-        
-        self.angle = result["angle"]
-        self.dt_speed = result["speed"]
+        self.angle = math.pi
+        self.speed = 20
         
         print("JUMP:x:{} y:{} angle:{} speed:{}".format(\
-            self.position.x, self.position.y, self.angle, self.dt_speed))
-        self.move_gravity()
+            self.position.x, self.position.y, self.angle, self.speed))
+        # self.move_gravity()
 
-    def move_gravity(self):
+    def move_gravity(self, ticks):
         if self.position.y > 450:
+            self.position.y = 450
             self.is_falling = False
+            self.speed = 0
+            print("finish falling")
             return
-        self.position.x += math.cos(self.angle) * self.dt_speed
-        self.position.y += math.sin(self.angle) * self.dt_speed
 
-        print("x:{} y:{} angle:{} speed:{}".format(\
-            self.position.x, self.position.y, self.angle, self.dt_speed))
+        #drag & elasticity
+        # self.dt_speed *= physics.drag * physics.elasticity
+        print("GRJUMP:x:{} y:{} angle:{} speed:{}".format(\
+            self.position.x, self.position.y, self.angle, self.speed))
+        #apply gravity
+        gravity = physics.gravity
+        (self.angle, self.speed) = physics.addVectors((self.angle, self.speed), gravity)
+        
+        self.position.x += math.sin(self.angle) * self.speed
+        self.position.y += math.cos(self.angle) * self.speed
+        print("GRJUMP2:x:{} y:{} angle:{} speed:{}".format(\
+            self.position.x, self.position.y, self.angle, self.speed))
+        print("moving angle:{} (x,y):({},{})".format(self.angle,self.position.x, self.position.y))
 
     
     def draw(self, screen):
